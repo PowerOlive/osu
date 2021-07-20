@@ -156,10 +156,11 @@ namespace osu.Game.Rulesets.Objects.Drawables
         /// If <c>null</c>, a hitobject is expected to be later applied via <see cref="PoolableDrawableWithLifetime{TEntry}.Apply"/> (or automatically via pooling).
         /// </param>
         protected DrawableHitObject([CanBeNull] HitObject initialHitObject = null)
-            : base(initialHitObject != null ? new SyntheticHitObjectEntry(initialHitObject) : null)
         {
-            if (Entry != null)
-                ensureEntryHasResult();
+            if (initialHitObject == null) return;
+
+            Entry = new SyntheticHitObjectEntry(initialHitObject);
+            ensureEntryHasResult();
         }
 
         [BackgroundDependencyLoader]
@@ -403,13 +404,13 @@ namespace osu.Game.Rulesets.Objects.Drawables
 
             clearExistingStateTransforms();
 
-            using (BeginAbsoluteSequence(transformTime, true))
+            using (BeginAbsoluteSequence(transformTime))
                 UpdateInitialTransforms();
 
-            using (BeginAbsoluteSequence(StateUpdateTime, true))
+            using (BeginAbsoluteSequence(StateUpdateTime))
                 UpdateStartTimeStateTransforms();
 
-            using (BeginAbsoluteSequence(HitStateUpdateTime, true))
+            using (BeginAbsoluteSequence(HitStateUpdateTime))
                 UpdateHitStateTransforms(newState);
 
             state.Value = newState;
@@ -501,8 +502,7 @@ namespace osu.Game.Rulesets.Objects.Drawables
         {
             if (!(HitObject is IHasComboInformation combo)) return;
 
-            var comboColours = CurrentSkin.GetConfig<GlobalSkinColours, IReadOnlyList<Color4>>(GlobalSkinColours.ComboColours)?.Value ?? Array.Empty<Color4>();
-            AccentColour.Value = combo.GetComboColour(comboColours);
+            AccentColour.Value = combo.GetComboColour(CurrentSkin);
         }
 
         /// <summary>
